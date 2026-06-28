@@ -1,0 +1,6 @@
+{
+  "name": "ActNow",
+  "description": "Focuses on action, not reminders. An AI-powered productivity companion that proactively plans, prioritizes, and breaks down tasks to beat critical deadlines, featuring real-time stress index monitoring and an interactive voice assistant.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
