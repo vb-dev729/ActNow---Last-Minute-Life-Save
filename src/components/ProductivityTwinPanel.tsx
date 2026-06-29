@@ -143,15 +143,15 @@ export default function ProductivityTwinPanel({ tasks, twin }: ProductivityTwinP
         </div>
 
         {/* Heatmap Bars */}
-        <div className="flex items-end justify-between gap-2 h-28 my-2 px-2 relative">
+        <div className="flex items-end justify-between gap-2 h-44 my-4 px-2 relative">
           {/* Overlay grid lines */}
-          <div className="absolute inset-x-0 top-0 h-px bg-white/5" />
+          <div className="absolute inset-x-0 top-4 h-px bg-white/5" />
           <div className="absolute inset-x-0 top-1/2 h-px bg-white/5" />
-          <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
+          <div className="absolute inset-x-0 bottom-12 h-px bg-white/10" />
 
           {nextDays.map((day, idx) => {
             // Calculate height percentage
-            const heightPercent = Math.max(10, Math.round((day.totalWeight / maxWeight) * 100));
+            const heightPercent = Math.max(12, Math.round((day.totalWeight / maxWeight) * 100));
             // Color based on pressure level
             const isCritical = day.totalWeight > 8;
             const isMedium = day.totalWeight > 3;
@@ -167,11 +167,11 @@ export default function ProductivityTwinPanel({ tasks, twin }: ProductivityTwinP
                 key={day.dateStr} 
                 whileHover={{ y: -3, scale: 1.03 }}
                 transition={{ duration: 0.2 }}
-                className="flex-1 flex flex-col items-center gap-2 relative z-10 cursor-pointer"
+                className="flex-1 flex flex-col items-center justify-end gap-2 h-full relative z-10 cursor-pointer"
               >
                 {/* Micro tooltip with tasks count */}
                 {day.tasksCount > 0 && (
-                  <span className="absolute -top-6 text-[9px] font-mono font-bold text-white px-1 py-0.5 rounded bg-black/80 border border-white/10">
+                  <span className="absolute top-0 text-[9px] font-mono font-bold text-white px-1.5 py-0.5 rounded bg-black/80 border border-white/10 shadow-lg">
                     {day.tasksCount} task{day.tasksCount > 1 ? 's' : ''}
                   </span>
                 )}
@@ -187,11 +187,11 @@ export default function ProductivityTwinPanel({ tasks, twin }: ProductivityTwinP
                 </div>
 
                 {/* Day label */}
-                <div className="flex flex-col items-center">
-                  <span className="text-[10px] text-gray-300 font-bold truncate max-w-full text-center">
+                <div className="flex flex-col items-center h-10 justify-start">
+                  <span className="text-[10px] text-gray-300 font-bold truncate max-w-full text-center font-sans">
                     {day.dayName}
                   </span>
-                  <span className="text-[8px] text-gray-500 uppercase tracking-widest">
+                  <span className="text-[8px] text-gray-500 uppercase tracking-widest mt-0.5 font-mono">
                     {day.rawDate.toLocaleDateString([], { month: 'short', day: 'numeric' })}
                   </span>
                 </div>

@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Clock, ShieldAlert, Flame, Zap } from 'lucide-react';
+import { Clock, ShieldAlert, Flame, Zap, AlertOctagon } from 'lucide-react';
 import { Task } from '../types';
 
 interface HeaderProps {
   tasks: Task[];
+  onEmergencyRescue?: (taskId: string) => void;
 }
 
-export default function Header({ tasks }: HeaderProps) {
+export default function Header({ tasks, onEmergencyRescue }: HeaderProps) {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -15,16 +16,22 @@ export default function Header({ tasks }: HeaderProps) {
     return () => clearInterval(timer);
   }, []);
 
-  // Calculate System Stress Level
-  const pendingTasks = tasks.filter(t => t.status !== 'completed');
-  const criticalTasks = pendingTasks.filter(t => t.urgency === 'critical');
-  const highTasks = pendingTasks.filter(t => t.urgency === 'high');
+  const activeTasks = tasks.filter(t => t.status !== 'completed');
+  const completedTasks = tasks.filter(t => t.status === 'completed');
+  const totalCount = tasks.length;
+  const adherenceRate = totalCount > 0 ? Math.round((completedTasks.length / totalCount) * 100) : 100;
+
+  const highestUrgencyTask = activeTasks
+    .sort((a, b) => b.aiPriorityScore - a.aiPriorityScore)[0];
+
+  const criticalTasks = activeTasks.filter(t => t.urgency === 'critical');
+  const highTasks = activeTasks.filter(t => t.urgency === 'high');
 
   let stressScore = 0;
-  if (pendingTasks.length > 0) {
+  if (activeTasks.length > 0) {
     stressScore = Math.min(
       100,
-      criticalTasks.length * 35 + highTasks.length * 15 + pendingTasks.length * 5
+      criticalTasks.length * 35 + highTasks.length * 15 + activeTasks.length * 5
     );
   }
 
@@ -55,18 +62,28 @@ export default function Header({ tasks }: HeaderProps) {
       {/* Title & Brand */}
       <div className="flex items-center gap-3 mb-4 md:mb-0 relative z-10">
         <div className="p-3 bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-xl shadow-lg shadow-violet-500/20 border border-violet-400/20">
-          <Flame className="w-6 h-6 text-violet-100" />
+          <Flame className="w-6 h-6 text-violet-100 animate-pulse" />
         </div>
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-violet-100 via-violet-300 to-white bg-clip-text text-transparent">
-            ActNow
+            ActNow <span className="text-xs font-semibold px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-300">Companion</span>
           </h1>
-          <p className="text-xs text-gray-400 font-medium">Focuses on action, not reminders</p>
+          <p className="text-xs text-gray-400 font-medium">Real-time schedule protection and auto-replanning</p>
         </div>
       </div>
 
-      {/* Clock & Real-time Info */}
+      {/* Clock, Fuel, & Real-time Info */}
       <div className="flex flex-wrap items-center gap-4 md:gap-6 relative z-10">
+        
+        {/* Schedule Adherence Meter (replaces fuel) */}
+        <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-violet-500/5 border border-violet-500/15 text-violet-400 shadow-md">
+          <Zap className="w-4 h-4 fill-violet-500/20 animate-bounce text-violet-400" />
+          <div className="flex flex-col">
+            <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest">ADHERENCE RATE</span>
+            <span className="text-xs font-black font-mono tracking-wide">{adherenceRate}% completed</span>
+          </div>
+        </div>
+
         {/* Real-time Clock */}
         <div className="flex flex-col items-end px-4 py-1.5 rounded-xl bg-white/5 border border-white/5">
           <div className="flex items-center gap-2 text-violet-300 font-mono text-base md:text-lg font-semibold tracking-widest">
@@ -89,6 +106,18 @@ export default function Header({ tasks }: HeaderProps) {
             </div>
           </div>
         </div>
+
+        {/* Global Emergency Rescue Shortcut */}
+        {highestUrgencyTask && onEmergencyRescue && (
+          <button
+            onClick={() => onEmergencyRescue(highestUrgencyTask.id)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-lg shadow-rose-600/20 border border-rose-400/30 cursor-pointer animate-pulse transition-all duration-300"
+            title={`Rescue: ${highestUrgencyTask.title}`}
+          >
+            <AlertOctagon className="w-4 h-4 text-white" />
+            <span>RESCUE ME</span>
+          </button>
+        )}
       </div>
     </motion.header>
   );

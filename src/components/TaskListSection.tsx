@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, ShieldAlert, CheckCircle2, Circle, Clock, Flame, Brain, 
   ListTodo, ChevronDown, ChevronUp, Play, Square, Pause, Plus, Trash2, 
-  RotateCcw, AlertTriangle, Stars, Zap, Calendar, Hourglass 
+  RotateCcw, AlertTriangle, Stars, Zap, Calendar, Hourglass, Target, 
+  FileText, Briefcase, Award, GraduationCap, CheckCircle 
 } from 'lucide-react';
 import { Task, TaskSubStep, EmergencyScheduleItem, GoalOrHabit } from '../types';
 
@@ -17,6 +18,7 @@ interface TaskListSectionProps {
   onToggleRescueMode: (taskId: string) => void;
   onUpdateRescueSchedule: (taskId: string, schedule: EmergencyScheduleItem[]) => void;
   onAnalyzeTask: (taskId: string) => void;
+  onEnterRescueCockpit?: (taskId: string) => void;
 }
 
 export default function TaskListSection({
@@ -28,12 +30,12 @@ export default function TaskListSection({
   onToggleSubStep,
   onToggleRescueMode,
   onUpdateRescueSchedule,
-  onAnalyzeTask
+  onAnalyzeTask,
+  onEnterRescueCockpit
 }: TaskListSectionProps) {
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>("task-1");
   const [filterCategory, setFilterCategory] = useState<string>("all");
 
-  // Aesthetic Completing Task Sparks Particles
   const [sparkParticles, setSparkParticles] = useState<Array<{
     id: string;
     x: number;
@@ -48,12 +50,12 @@ export default function TaskListSection({
     const colors = ['#8b5cf6', '#c084fc', '#10b981', '#34d399', '#f43f5e', '#fbbf24', '#38bdf8'];
     const newSparks = Array.from({ length: 15 }, (_, i) => ({
       id: `${taskId}-${i}-${Date.now()}`,
-      x: 10, // approximate horizontal offset near the checkbox
-      y: 30, // vertical alignment with the row head
+      x: 10,
+      y: 30,
       color: colors[Math.floor(Math.random() * colors.length)],
       size: Math.random() * 4 + 2,
-      vx: (Math.random() - 0.1) * 200, // burst outward to the right
-      vy: (Math.random() - 0.5) * 150 - 30, // vertical blast range
+      vx: (Math.random() - 0.1) * 200,
+      vy: (Math.random() - 0.5) * 150 - 30,
     }));
     setSparkParticles(prev => [...prev, ...newSparks]);
     setTimeout(() => {
@@ -63,7 +65,7 @@ export default function TaskListSection({
   
   // Quick Timer state for Smart Intervention (5-minute micro start)
   const [timerActive, setTimerActive] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(5 * 60); // 5 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(5 * 60); 
   const [timerTaskTitle, setTimerTaskTitle] = useState("");
 
   // Task Creation states
@@ -71,7 +73,7 @@ export default function TaskListSection({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [category, setCategory] = useState<'work' | 'study' | 'personal' | 'finance' | 'other'>("work");
+  const [category, setCategory] = useState<Task['category']>("assignment");
   const [difficulty, setDifficulty] = useState(3);
   const [effort, setEffort] = useState(2);
 
@@ -84,7 +86,7 @@ export default function TaskListSection({
       }, 1000);
     } else if (timeLeft === 0) {
       setTimerActive(false);
-      alert("Congratulations! You did 5 minutes of focused work. The hardest part is over — you have bypassed start resistance!");
+      alert("Congratulations! You completed 5 minutes of focused effort. Start resistance bypassed!");
       setTimeLeft(5 * 60);
     }
     return () => clearInterval(interval);
@@ -118,7 +120,7 @@ export default function TaskListSection({
     setTitle("");
     setDescription("");
     setDeadline("");
-    setCategory("work");
+    setCategory("assignment");
     setDifficulty(3);
     setEffort(2);
     setIsAdding(false);
@@ -144,15 +146,28 @@ export default function TaskListSection({
 
   const filteredTasks = tasks.filter(t => filterCategory === 'all' || t.category === filterCategory);
 
+  // Return elegant category indicator icons
+  const getCategoryIcon = (cat: Task['category']) => {
+    switch(cat) {
+      case 'goal': return <Target className="w-3.5 h-3.5 text-emerald-400" />;
+      case 'assignment': return <FileText className="w-3.5 h-3.5 text-blue-400" />;
+      case 'project': return <Briefcase className="w-3.5 h-3.5 text-violet-400" />;
+      case 'exam': return <GraduationCap className="w-3.5 h-3.5 text-rose-400" />;
+      case 'interview': return <Award className="w-3.5 h-3.5 text-amber-400" />;
+      default: return <ListTodo className="w-3.5 h-3.5 text-gray-400" />;
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* LEFT COLUMN: The Task List & Filter */}
       <div className="lg:col-span-7 flex flex-col gap-4">
+        
         {/* Filter bar and Add task header */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-white/5 border border-white/5 p-4 rounded-xl">
           <div className="flex items-center gap-2">
             <ListTodo className="w-4 h-4 text-violet-400" />
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-wider">Active Rescue Queue</h3>
+            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-wider">Workspace Queue</h3>
           </div>
 
           <div className="flex items-center gap-2">
@@ -162,6 +177,11 @@ export default function TaskListSection({
               className="bg-black/40 border border-white/10 rounded-lg text-xs py-1 px-2.5 text-gray-300 focus:outline-none focus:border-violet-500 cursor-pointer"
             >
               <option value="all">All Categories</option>
+              <option value="goal">Goals</option>
+              <option value="assignment">Assignments</option>
+              <option value="project">Projects</option>
+              <option value="exam">Exams</option>
+              <option value="interview">Interviews</option>
               <option value="work">Work</option>
               <option value="study">Study</option>
               <option value="personal">Personal</option>
@@ -173,7 +193,7 @@ export default function TaskListSection({
               className="bg-violet-600 hover:bg-violet-500 text-white font-bold py-1 px-3 rounded-lg text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Add Task</span>
+              <span>Add Target</span>
             </button>
           </div>
         </div>
@@ -190,18 +210,18 @@ export default function TaskListSection({
             >
               <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
                 <Stars className="w-4 h-4 text-violet-400" />
-                <span>Launch New Rescue Task</span>
+                <span>AI Execution Engine — Map Target</span>
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Task Title</label>
+                  <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Target Title</label>
                   <input
                     type="text"
                     required
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g., Chemistry Midterm Prep"
+                    placeholder="e.g., IIT-JEE Physics Practice or ML Interview Prep"
                     className="glass-input p-2 rounded-lg text-xs"
                   />
                 </div>
@@ -214,11 +234,15 @@ export default function TaskListSection({
                       onChange={(e) => setCategory(e.target.value as any)}
                       className="glass-input p-2 rounded-lg text-xs"
                     >
+                      <option value="goal">Goal</option>
+                      <option value="assignment">Assignment</option>
+                      <option value="project">Project</option>
+                      <option value="exam">Exam</option>
+                      <option value="interview">Interview</option>
                       <option value="work">Work</option>
                       <option value="study">Study</option>
                       <option value="personal">Personal</option>
                       <option value="finance">Finance</option>
-                      <option value="other">Other</option>
                     </select>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -236,11 +260,11 @@ export default function TaskListSection({
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Detailed Description</label>
+                <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Requirements / Notes</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="What needs to be done? Add requirements or links..."
+                  placeholder="Paste rules, requirements, links..."
                   rows={2}
                   className="glass-input p-2 rounded-lg text-xs resize-none"
                 />
@@ -284,7 +308,7 @@ export default function TaskListSection({
                   className="bg-violet-600 hover:bg-violet-500 text-white font-bold py-1.5 px-4 rounded-lg text-xs flex items-center gap-1 shadow-lg shadow-violet-500/20 cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>AI Pre-Prioritize</span>
+                  <span>Map & Auto-Breakdown</span>
                 </button>
               </div>
             </motion.form>
@@ -299,10 +323,9 @@ export default function TaskListSection({
                 const isExpanded = expandedTaskId === task.id;
                 const countdown = getRemainingTime(task.deadline);
 
-                // Risk Gradient Class
                 const hasHighRisk = (task.missRisk || 0) >= 70;
                 const riskBorderClass = hasHighRisk 
-                  ? 'border-rose-500/25 bg-gradient-to-r from-slate-900 via-slate-900 to-rose-950/20'
+                  ? 'border-rose-500/25 bg-gradient-to-r from-slate-900 via-slate-900 to-rose-950/15'
                   : 'border-white/5 bg-slate-900/60';
 
                 return (
@@ -326,463 +349,264 @@ export default function TaskListSection({
                       />
                     </div>
 
-                    {/* Completion Burst Particles */}
-                    {sparkParticles.filter(sp => sp.id.startsWith(task.id)).map(sp => (
-                      <motion.div
-                        key={sp.id}
-                        className="absolute rounded-full pointer-events-none z-50"
-                        style={{
-                          left: `${sp.x}%`,
-                          top: `${sp.y}%`,
-                          width: `${sp.size}px`,
-                          height: `${sp.size}px`,
-                          backgroundColor: sp.color,
-                          boxShadow: `0 0 10px ${sp.color}, 0 0 4px #ffffff`,
-                        }}
-                        animate={{
-                          x: sp.vx,
-                          y: sp.vy,
-                          opacity: [1, 0],
-                          scale: [1, 0.2],
-                        }}
-                        transition={{
-                          duration: 0.8,
-                          ease: "easeOut",
-                        }}
-                      />
-                    ))}
-
-                    {/* Main Summary Panel */}
-                    <div 
-                      onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
-                      className="p-5 flex items-start gap-4 cursor-pointer relative z-10 hover:bg-white/[0.02]"
-                    >
-                      {/* Checkbox button */}
+                    {/* Checkbox and main row info */}
+                    <div className="p-4 flex items-start gap-3.5">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (task.status !== 'completed') {
-                            triggerCompletionBurst(task.id);
-                          }
+                        onClick={() => {
+                          triggerCompletionBurst(task.id);
                           onCompleteTask(task.id);
                         }}
-                        className={`mt-1 flex-shrink-0 text-gray-500 hover:text-emerald-400 transition-colors cursor-pointer ${
-                          task.status === 'completed' ? 'text-emerald-400' : ''
-                        }`}
+                        className="mt-1 flex-shrink-0 text-gray-500 hover:text-violet-400 transition-colors cursor-pointer"
                       >
                         {task.status === 'completed' ? (
-                          <CheckCircle2 className="w-5 h-5" />
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                         ) : (
                           <Circle className="w-5 h-5" />
                         )}
                       </button>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                          {/* Title */}
-                          <h4 className={`text-sm font-extrabold text-white truncate ${task.status === 'completed' ? 'line-through text-gray-500' : ''}`}>
-                            {task.title}
-                          </h4>
-
-                          {/* Category Badge */}
-                          <span className="text-[9px] uppercase tracking-wider font-bold bg-white/5 text-gray-400 border border-white/5 px-2 py-0.5 rounded">
-                            {task.category}
+                      <div className="flex-1 min-w-0" onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded bg-black/40 text-gray-300 border border-white/5 flex items-center gap-1 font-mono">
+                            {getCategoryIcon(task.category)}
+                            <span>{task.category}</span>
                           </span>
 
-                          {/* Difficulty Indicators */}
-                          <span className="flex items-center gap-0.5 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
-                            <span className="text-[8px] text-gray-400 font-bold mr-1">Diff:</span>
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Stars 
-                                key={i} 
-                                className={`w-2.5 h-2.5 ${i < task.difficulty ? 'text-amber-400 fill-amber-400/30' : 'text-gray-700'}`} 
-                              />
-                            ))}
+                          <span className={`text-[9px] uppercase tracking-wider font-mono font-bold px-1.5 py-0.5 rounded ${
+                            task.urgency === 'critical' 
+                              ? 'text-rose-400 bg-rose-500/10' 
+                              : task.urgency === 'high' 
+                              ? 'text-amber-400 bg-amber-500/10' 
+                              : 'text-gray-400 bg-gray-500/10'
+                          }`}>
+                            Urgency: {task.urgency} ({task.aiPriorityScore}%)
+                          </span>
+
+                          <span className={`text-[9px] font-mono font-semibold ml-auto ${countdown.color}`}>
+                            {countdown.text}
                           </span>
                         </div>
 
-                        <p className="text-xs text-gray-400 line-clamp-2 pr-4 font-medium leading-relaxed">
+                        <h4 className={`text-sm font-bold mt-1.5 ${task.status === 'completed' ? 'line-through text-gray-500' : 'text-white'}`}>
+                          {task.title}
+                        </h4>
+
+                        <p className="text-xs text-gray-400 mt-1 line-clamp-1">
                           {task.description}
                         </p>
-
-                        {/* Interactive Footer badges */}
-                        <div className="flex flex-wrap items-center gap-4 mt-3">
-                          <span className={`text-[11px] font-semibold flex items-center gap-1 ${countdown.color}`}>
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>{countdown.text}</span>
-                          </span>
-
-                          <span className="text-xs font-semibold text-violet-300 font-mono flex items-center gap-1 bg-violet-500/10 px-2 py-0.5 rounded-lg border border-violet-500/20">
-                            <Zap className="w-3 h-3 text-violet-400" />
-                            <span>Score: {task.aiPriorityScore}/100</span>
-                          </span>
-
-                          {/* Predictor */}
-                          {task.missRisk !== undefined && (
-                            <span className={`text-xs font-semibold font-mono flex items-center gap-1 bg-black/30 px-2 py-0.5 rounded-lg border ${
-                              hasHighRisk ? 'text-rose-400 border-rose-500/25' : 'text-gray-400 border-white/5'
-                            }`}>
-                              <Brain className="w-3 h-3 flex-shrink-0" />
-                              <span>{task.missRisk}% Risk of Miss</span>
-                            </span>
-                          )}
-
-                          {task.ignoreCount >= 3 && (
-                            <span className="text-[10px] font-bold text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded-lg border border-rose-500/25 flex items-center gap-1 animate-pulse">
-                              <AlertTriangle className="w-3 h-3 text-rose-400" />
-                              <span>Resisted {task.ignoreCount}x</span>
-                            </span>
-                          )}
-                        </div>
                       </div>
 
-                      {/* Chevron Toggle */}
-                      <div className="text-gray-400 hover:text-white mt-1 self-start">
-                        {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                      </div>
+                      <button
+                        onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                        className="text-gray-500 hover:text-white transition-colors cursor-pointer mt-1"
+                      >
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
                     </div>
 
-                    {/* DETAILED EXPANDABLE TASK CONSOLE */}
-                    <AnimatePresence>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="border-t border-white/5 bg-black/40 p-5 relative z-10 flex flex-col gap-5 overflow-hidden"
-                        >
-                          {/* AI Copilot recommendation block */}
-                          {task.aiRecommendation && (
-                            <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-3 flex items-start gap-2.5">
-                              <Sparkles className="w-4 h-4 text-violet-400 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1">
-                                <span className="text-[10px] text-violet-300 uppercase font-extrabold tracking-wider block mb-0.5">Copilot Insight</span>
-                                <p className="text-xs text-gray-300 leading-relaxed font-medium">{task.aiRecommendation}</p>
-                              </div>
-                            </div>
-                          )}
+                    {/* EXPANDED AREA DETAILS */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 pt-1 border-t border-white/5 bg-black/10 flex flex-col gap-4">
+                        <div className="text-xs text-gray-300 leading-relaxed bg-black/25 p-3 rounded-xl border border-white/5">
+                          <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider font-mono mb-1">Target Description</span>
+                          {task.description || "No deep description attached."}
+                        </div>
 
-                          {/* SMART BEHAVIORAL INTERVENTION BANNER */}
-                          {task.ignoreCount >= 3 && (
-                            <div className="bg-rose-500/5 border border-rose-500/20 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                              <div className="flex items-start gap-2.5">
-                                <ShieldAlert className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
-                                <div>
-                                  <h5 className="text-xs font-extrabold text-rose-300 uppercase tracking-wide">High Resistance Lockout</h5>
-                                  <p className="text-xs text-gray-400 leading-relaxed mt-1 font-medium">
-                                    You have skipped this task {task.ignoreCount} times. Procrastination psychology shows that starting is 90% of the battle. Let's do a micro-session of just 5 minutes now.
-                                  </p>
-                                </div>
-                              </div>
+                        {/* AI EXECUTION ENGINE: Interactive Sub-steps breakdown */}
+                        {task.subSteps && task.subSteps.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] text-violet-400 font-bold uppercase tracking-wider flex items-center gap-1 font-mono">
+                                <Brain className="w-3.5 h-3.5 text-violet-400" />
+                                <span>AI EXECUTION STEPS</span>
+                              </span>
+                              <span className="text-[9px] text-gray-500 font-semibold">
+                                {task.subSteps.filter(s => s.completed).length}/{task.subSteps.length} cleared
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              {task.subSteps.map((step) => (
+                                <button
+                                  key={step.id}
+                                  onClick={() => onToggleSubStep(task.id, step.id)}
+                                  className={`p-2.5 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                                    step.completed 
+                                      ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300' 
+                                      : 'bg-black/35 border-white/5 hover:border-white/10 text-gray-300'
+                                  }`}
+                                >
+                                  <div className="mt-0.5">
+                                    {step.completed ? (
+                                      <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                    ) : (
+                                      <Circle className="w-4 h-4 text-gray-600" />
+                                    )}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <span className={`text-[11px] font-semibold block leading-tight ${step.completed ? 'line-through text-emerald-400' : 'text-gray-200'}`}>
+                                      {step.title}
+                                    </span>
+                                    <span className="text-[8px] text-gray-500 font-mono block mt-0.5">Duration: {step.durationMin} min</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* AI Tips Card */}
+                        {task.aiRecommendation && (
+                          <div className="bg-violet-500/5 border border-violet-500/10 p-3 rounded-xl flex items-start gap-2 text-violet-300">
+                            <Sparkles className="w-4 h-4 flex-shrink-0 text-violet-400 mt-0.5" />
+                            <p className="text-[11px] leading-relaxed font-semibold">
+                              {task.aiRecommendation}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Contextual actions */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
+                          <div className="flex items-center gap-2">
+                            {task.status !== 'completed' && onEnterRescueCockpit && (
+                              <button
+                                onClick={() => onEnterRescueCockpit(task.id)}
+                                className="bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-[10px] tracking-wider py-1.5 px-3.5 rounded-lg flex items-center gap-1.5 shadow-lg shadow-rose-600/15 cursor-pointer"
+                              >
+                                <Flame className="w-3.5 h-3.5 text-rose-100 animate-pulse" />
+                                <span>RESCUE THIS TARGET</span>
+                              </button>
+                            )}
+
+                            {task.status !== 'completed' && (
                               <button
                                 onClick={() => startMicroFocus(task.title)}
-                                className="bg-rose-600 hover:bg-rose-500 text-white font-bold py-1.5 px-4 rounded-lg text-xs flex items-center gap-1.5 transition-colors cursor-pointer flex-shrink-0"
+                                className="bg-white/5 hover:bg-white/10 border border-white/5 text-gray-300 font-bold py-1.5 px-3 rounded-lg text-[10px] flex items-center gap-1.5 cursor-pointer"
                               >
-                                <Play className="w-4 h-4" />
+                                <Play className="w-3.5 h-3.5 text-gray-400" />
                                 <span>Start 5m Focus</span>
                               </button>
-                            </div>
-                          )}
-
-                          {/* AI BREAKDOWN ENGINE */}
-                          {task.subSteps && task.subSteps.length > 0 ? (
-                            <div className="flex flex-col gap-2.5">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] text-gray-400 uppercase font-extrabold tracking-wider flex items-center gap-1.5">
-                                  <Brain className="w-3.5 h-3.5 text-violet-400" />
-                                  <span>AI Breakdown Sprints ({task.subSteps.reduce((sum, s) => sum + (s.completed ? 0 : s.durationMin), 0)}m remaining)</span>
-                                </span>
-                                <span className="text-[10px] text-gray-500 font-mono">
-                                  {task.subSteps.filter(s => s.completed).length}/{task.subSteps.length} Complete
-                                </span>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                                {task.subSteps.map((step) => (
-                                  <div
-                                    key={step.id}
-                                    onClick={() => onToggleSubStep(task.id, step.id)}
-                                    className={`p-3 rounded-xl border flex items-center justify-between gap-3 cursor-pointer transition-colors ${
-                                      step.completed 
-                                        ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-300' 
-                                        : 'bg-white/5 border-white/5 text-gray-200 hover:bg-white/[0.08]'
-                                    }`}
-                                  >
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                      {step.completed ? (
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                                      ) : (
-                                        <Circle className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                                      )}
-                                      <span className={`text-xs truncate ${step.completed ? 'line-through text-gray-500' : ''}`}>
-                                        {step.title}
-                                      </span>
-                                    </div>
-                                    <span className="text-[10px] font-mono text-gray-400 bg-black/20 px-2 py-0.5 rounded flex-shrink-0">
-                                      {step.durationMin}m
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="bg-white/5 p-3 rounded-xl flex items-center justify-between text-xs text-gray-400">
-                              <span>No sub-step breakdown is generated yet for this task.</span>
-                              <button
-                                onClick={() => onAnalyzeTask(task.id)}
-                                className="bg-violet-600 hover:bg-violet-500 text-white font-bold py-1 px-2.5 rounded text-[10px] cursor-pointer"
-                              >
-                                Ask Gemini to Breakdown
-                              </button>
-                            </div>
-                          )}
-
-                          {/* DEADLINE RESCUE MODE */}
-                          <div className="border-t border-white/5 pt-4 flex flex-col gap-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1.5">
-                                <Flame className="w-4 h-4 text-rose-400" />
-                                <span className="text-[10px] text-gray-300 uppercase font-extrabold tracking-wider">
-                                  Deadline Rescue Mode
-                                </span>
-                              </div>
-
-                              <button
-                                onClick={() => onToggleRescueMode(task.id)}
-                                className={`font-bold py-1 px-3 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
-                                  task.rescueMode 
-                                    ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-500/20 animate-pulse' 
-                                    : 'bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300'
-                                }`}
-                              >
-                                <Zap className="w-3.5 h-3.5" />
-                                <span>{task.rescueMode ? 'Rescue Active' : 'Engage Rescue Mode'}</span>
-                              </button>
-                            </div>
-
-                            {task.rescueMode && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                className="bg-rose-950/10 border border-rose-500/20 rounded-xl p-4 flex flex-col gap-3"
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span className="text-[10px] text-rose-300 font-extrabold uppercase tracking-wide">
-                                    Emergency Hour-by-Hour completion schedule
-                                  </span>
-                                  <button
-                                    onClick={() => onAnalyzeTask(task.id)}
-                                    className="text-[10px] text-violet-300 hover:text-white underline cursor-pointer"
-                                  >
-                                    Regenerate Plan
-                                  </button>
-                                </div>
-
-                                {task.emergencySchedule && task.emergencySchedule.length > 0 ? (
-                                  <div className="space-y-2">
-                                    {task.emergencySchedule.map((item, idx) => (
-                                      <div key={idx} className="flex gap-3 text-xs items-center">
-                                        <span className="text-rose-400 font-mono font-bold w-28 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/15 text-center flex-shrink-0">
-                                          {item.timeSlot}
-                                        </span>
-                                        <span className="text-gray-300 font-medium truncate">{item.activity}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <p className="text-xs text-rose-300 italic">
-                                    Generating rescue plan. Tap 'Regenerate Plan' to fetch immediately.
-                                  </p>
-                                )}
-                              </motion.div>
                             )}
                           </div>
 
-                          {/* Control panel buttons */}
-                          <div className="flex justify-between items-center border-t border-white/5 pt-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => onAnalyzeTask(task.id)}
+                              className="bg-black/30 hover:bg-black/50 border border-white/5 p-1.5 rounded-lg text-gray-400 hover:text-white cursor-pointer"
+                              title="Re-run AI breakdown"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                            </button>
                             <button
                               onClick={() => onDeleteTask(task.id)}
-                              className="text-gray-500 hover:text-rose-400 flex items-center gap-1 text-[11px] font-bold cursor-pointer transition-colors"
+                              className="bg-black/30 hover:bg-rose-950/20 border border-white/5 p-1.5 rounded-lg text-gray-400 hover:text-rose-400 cursor-pointer"
+                              title="Delete task"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
-                              <span>Delete Task</span>
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                if (task.status !== 'completed') {
-                                  triggerCompletionBurst(task.id);
-                                }
-                                onCompleteTask(task.id);
-                              }}
-                              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1 px-4 rounded-lg text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Complete & Cleanse Queue</span>
                             </button>
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 );
               })
             ) : (
-              <div className="bg-white/5 border border-white/5 p-8 rounded-2xl text-center text-gray-400 flex flex-col items-center justify-center gap-2">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mb-2 animate-bounce" />
-                <h4 className="font-bold text-white">All Safe. No deadlines pending!</h4>
-                <p className="text-xs">Your system stress score is zero. Tap Add Task to schedule more goals.</p>
+              <div className="text-center py-10 bg-black/20 rounded-2xl border border-white/5">
+                <ListTodo className="w-10 h-10 text-gray-600 mx-auto mb-3 animate-bounce" />
+                <p className="text-xs text-gray-400 font-semibold">Your selected queue filter has 0 targets scheduled.</p>
               </div>
             )}
           </AnimatePresence>
         </div>
       </div>
 
-      {/* RIGHT COLUMN: Focus TimerWidget & Accountability Status */}
+      {/* RIGHT COLUMN: Quick Micro-Focus HUD & Habits */}
       <div className="lg:col-span-5 flex flex-col gap-6">
-        {/* INTERACTIVE POMODORO FOCUS TIMER WIDGET */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-panel p-5 rounded-2xl flex flex-col justify-between min-h-[220px] relative overflow-hidden"
-        >
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">Start-Resistance Breaker</h3>
-              <p className="text-[10px] text-gray-400 mt-0.5">Beat procrastination using behavioral micro-habits</p>
-            </div>
-            <span className="p-2 bg-rose-500/10 rounded-lg border border-rose-500/20 text-rose-400">
-              <Hourglass className="w-5 h-5" />
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center my-2">
-            {timerActive ? (
-              <div className="text-center mb-3">
-                <span className="text-[10px] text-rose-400 font-extrabold uppercase tracking-widest animate-pulse">Deep focus active</span>
-                <p className="text-xs text-gray-300 truncate max-w-[200px] mt-0.5 italic">"{timerTaskTitle}"</p>
-              </div>
-            ) : (
-              <span className="text-xs text-gray-400 mb-3 text-center px-4">Engage a quick 5-minute block to bypass cognitive friction</span>
-            )}
-
-            {/* Glowing Circular Timer Ring */}
-            <div className="relative flex items-center justify-center w-32 h-32 mb-4">
-              <svg className="w-32 h-32 transform -rotate-90">
-                {/* Background Ring */}
-                <circle
-                  cx="64"
-                  cy="64"
-                  r="45"
-                  className="stroke-white/5"
-                  strokeWidth="5"
-                  fill="transparent"
-                />
-                {/* Dynamic Remaining Circle */}
-                <motion.circle
-                  cx="64"
-                  cy="64"
-                  r="45"
-                  className={timerActive ? "stroke-rose-500" : "stroke-violet-500"}
-                  strokeWidth="5"
-                  fill="transparent"
-                  strokeDasharray={2 * Math.PI * 45}
-                  animate={{ strokeDashoffset: (2 * Math.PI * 45) - (timeLeft / 300) * (2 * Math.PI * 45) }}
-                  transition={{ duration: 0.5, ease: 'linear' }}
-                  strokeLinecap="round"
-                  style={{ filter: timerActive ? 'drop-shadow(0 0 6px rgba(239, 68, 68, 0.5))' : 'drop-shadow(0 0 6px rgba(139, 92, 246, 0.5))' }}
-                />
-              </svg>
-              <div className="absolute flex flex-col items-center">
-                <span className="text-2xl font-mono font-black text-white tracking-wider">
-                  {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-                </span>
-                <span className="text-[8px] text-gray-400 font-bold uppercase mt-0.5 tracking-wider">Remaining</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {timerActive ? (
+        
+        {/* Quick Micro-Focus Timer Widget */}
+        <AnimatePresence>
+          {timerActive && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="glass-panel p-5 rounded-2xl border border-rose-500/20 bg-gradient-to-tr from-slate-950 via-slate-900 to-rose-950/10 flex flex-col gap-3 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/[0.03] rounded-full blur-2xl pointer-events-none" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-rose-500 animate-pulse" />
+                  <span className="text-[10px] font-bold text-rose-400 tracking-wider uppercase font-mono">
+                    ACTIVE MICRO SPRINT
+                  </span>
+                </div>
                 <button
                   onClick={stopMicroFocus}
-                  className="bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-4 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="text-gray-400 hover:text-white transition-colors cursor-pointer text-xs"
                 >
-                  <Pause className="w-3.5 h-3.5" />
-                  <span>Pause</span>
+                  ✕
                 </button>
-              ) : (
+              </div>
+
+              <div>
+                <h4 className="text-xs font-bold text-white truncate max-w-[220px]">
+                  {timerTaskTitle}
+                </h4>
+                <p className="text-[10px] text-gray-500 mt-0.5">
+                  Bypassing startup friction. Just stay here for 5 minutes.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between mt-1">
+                <div className="text-3xl font-black text-rose-400 font-mono tracking-widest">
+                  {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                </div>
+
                 <button
-                  onClick={() => startMicroFocus("General Workspace Sprint")}
-                  className="bg-violet-600 hover:bg-violet-500 text-white font-bold py-1.5 px-5 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  onClick={stopMicroFocus}
+                  className="bg-rose-950/60 hover:bg-rose-900/60 border border-rose-500/30 text-rose-300 font-extrabold text-[10px] px-3.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
                 >
-                  <Play className="w-3.5 h-3.5" />
-                  <span>Initiate Sprint</span>
+                  <Square className="w-3 h-3 fill-rose-300" />
+                  <span>Conclude</span>
                 </button>
-              )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              <button
-                onClick={() => {
-                  setTimerActive(false);
-                  setTimeLeft(5 * 60);
-                }}
-                className="bg-white/5 hover:bg-white/10 border border-white/5 p-2 rounded-xl text-gray-400 hover:text-white cursor-pointer"
-                title="Reset timer"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* GOAL AND HABIT ACCOUNTABILITY TRACKER */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-panel p-5 rounded-2xl flex flex-col justify-between min-h-[260px] relative overflow-hidden"
-        >
+        {/* Dynamic Habits Stack list */}
+        <div className="glass-panel p-5 rounded-2xl border border-white/5 flex flex-col gap-4">
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">AI Accountability Coach</h3>
-              <span className="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-extrabold uppercase tracking-widest">
-                Streaks
-              </span>
-            </div>
-            <p className="text-xs text-gray-400 mb-4">
-              Maintain daily routines to bolster your overall focus stamina.
+            <h3 className="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Stars className="w-4 h-4 text-violet-400" />
+              <span>Deep Work Habits</span>
+            </h3>
+            <p className="text-[10px] text-gray-500 mt-1">
+              Solidify focus resilience by stacking daily and weekly habits.
             </p>
           </div>
 
-          {/* Quick interactive lists of habits */}
-          <div className="space-y-3 flex-1 overflow-y-auto max-h-[160px] pr-1 custom-scrollbar">
-            {goalsOrHabits.map((habit) => {
-              const isCareer = habit.category === 'career';
-              return (
-                <div key={habit.id} className="bg-white/5 border border-white/5 p-3 rounded-xl flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                      <Zap className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-white block truncate">{habit.title}</span>
-                      <span className="text-[9px] text-gray-400 uppercase tracking-wide font-medium">{habit.frequency} frequency</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-[10px] font-mono bg-orange-500/10 text-orange-400 border border-orange-500/15 px-2 py-0.5 rounded font-bold">
-                      <Flame className="w-3 h-3 fill-orange-500/20" />
-                      <span>{habit.streak} day streak</span>
-                    </div>
-                  </div>
+          <div className="space-y-2.5">
+            {goalsOrHabits.map((habit) => (
+              <div key={habit.id} className="bg-white/[0.01] border border-white/5 p-3 rounded-xl flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-gray-200 block truncate">{habit.title}</span>
+                  <span className="text-[9px] text-gray-500 block mt-0.5 uppercase font-mono">
+                    Frequency: {habit.frequency}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
 
-          <p className="text-[10px] text-gray-500 mt-2 italic">
-            "Your streak records demonstrate 45% better focus stamina when active. Keep it going!"
-          </p>
-        </motion.div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-mono text-violet-400 font-bold bg-violet-500/10 px-2 py-0.5 rounded border border-violet-500/25">
+                    🔥 {habit.streak} days
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );

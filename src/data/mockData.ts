@@ -15,8 +15,8 @@ export const initialTasks = (): Task[] => {
   return [
     {
       id: "task-1",
-      title: "Deliver Investment Pitch Slides",
-      description: "Complete and polish the slide deck for tomorrow morning's seed funding presentation. Needs financial charts and final roadmap validation.",
+      title: "Deliver Hackathon National Level Pitch Slides",
+      description: "Complete and polish the pitch deck for tomorrow morning's National Hackathon presentation. Needs financial charts, product demo link, and final roadmap validation.",
       deadline: deadline1.toISOString(),
       category: "work",
       urgency: "critical",
@@ -26,24 +26,24 @@ export const initialTasks = (): Task[] => {
       aiPriorityScore: 94,
       missRisk: 86,
       ignoreCount: 3, // Ignored 3 times! Triggers behavioral intervention
-      aiRecommendation: "⚠️ Extreme risk (86%). You have ignored this task 3 times. Let's spend just 5 minutes on it now to bypass start-resistance.",
+      aiRecommendation: "⚠️ Extreme risk (86%). You have ignored this task 3 times. Let's spend just 5 minutes on it now in Rescue Mode to bypass start-resistance.",
       subSteps: [
-        { id: "step-1", title: "Verify 3-year revenue growth chart calculations", durationMin: 15, completed: false },
-        { id: "step-2", title: "Record 1-minute product walkthrough demo clip", durationMin: 25, completed: false },
-        { id: "step-3", title: "Refine 'Why Now' competitive advantage slide", durationMin: 20, completed: false },
-        { id: "step-4", title: "Perform one fast verbal practice run-through", durationMin: 15, completed: false }
+        { id: "step-1", title: "Verify 3-year revenue growth chart calculations (INR)", durationMin: 15, completed: false },
+        { id: "step-2", title: "Record 1-minute YouTube/Vimeo demo walk-through clip", durationMin: 25, completed: false },
+        { id: "step-3", title: "Refine 'Why Now' India growth & UPI integration slide", durationMin: 20, completed: false },
+        { id: "step-4", title: "Perform one rapid verbal speech practice run-through", durationMin: 15, completed: false }
       ],
       rescueMode: true,
       emergencySchedule: [
-        { timeSlot: "18:00 - 18:30", activity: "Lock in core slide metrics & save changes" },
-        { timeSlot: "18:30 - 19:15", activity: "Integrate video walkthrough element" },
+        { timeSlot: "18:00 - 18:30", activity: "Lock in core deck metrics & save slides" },
+        { timeSlot: "18:30 - 19:15", activity: "Integrate video demonstration element" },
         { timeSlot: "19:15 - 19:45", activity: "Dry-run speech with timer & sync backups" }
       ]
     },
     {
       id: "task-2",
-      title: "Organic Chemistry midterm prep",
-      description: "Study key nucleophilic substitution mechanisms and prepare reference card sheets for the midterm exam.",
+      title: "Organic Chemistry & JEE Exam Prep",
+      description: "Study key nucleophilic substitution mechanisms and prepare reference card sheets for the upcoming Indian board and exam papers.",
       deadline: deadline2.toISOString(),
       category: "study",
       urgency: "high",
@@ -53,18 +53,18 @@ export const initialTasks = (): Task[] => {
       aiPriorityScore: 82,
       missRisk: 72,
       ignoreCount: 1,
-      aiRecommendation: "Midterm exam is in 14 hours. High cognitive weight. Study the SN1/SN2 speed rules and sample solutions first.",
+      aiRecommendation: "Midterm chemistry exam is in 14 hours. High cognitive weight. Study the SN1/SN2 speed rules and sample solutions first.",
       subSteps: [
         { id: "step-2-1", title: "Compare rate laws for SN1 vs SN2 processes", durationMin: 30, completed: false },
-        { id: "step-2-2", title: "Solve practice quiz diagrams in Chapter 8", durationMin: 45, completed: false },
+        { id: "step-2-2", title: "Solve practice quiz diagrams in IIT-JEE Chapter 8", durationMin: 45, completed: false },
         { id: "step-2-3", title: "Write physical mechanism cheat sheet on paper", durationMin: 25, completed: false }
       ],
       rescueMode: false
     },
     {
       id: "task-3",
-      title: "Auto-Pay Hosting Server Bill",
-      description: "Transfer buffer funds and pay production instance invoices to prevent sudden cloud database suspension.",
+      title: "Auto-Pay Indian Hosting Instance Bill (via UPI)",
+      description: "Transfer buffer funds and pay AWS/Google Cloud instance invoices to prevent sudden database suspension.",
       deadline: deadline3.toISOString(),
       category: "finance",
       urgency: "medium",
@@ -74,17 +74,17 @@ export const initialTasks = (): Task[] => {
       aiPriorityScore: 52,
       missRisk: 44,
       ignoreCount: 0,
-      aiRecommendation: "Extremely low effort (10 mins). Pay immediately to free your brain from micro-stressors.",
+      aiRecommendation: "Extremely low effort (10 mins). Clear Indian cloud invoices immediately to free your brain from micro-stressors.",
       subSteps: [
-        { id: "step-3-1", title: "Verify hosting service statement details", durationMin: 5, completed: false },
-        { id: "step-3-2", title: "Confirm quick bank card authorization receipt", durationMin: 5, completed: false }
+        { id: "step-3-1", title: "Verify hosting service statement details & tax rates", durationMin: 5, completed: false },
+        { id: "step-3-2", title: "Confirm quick NetBanking or UPI authorization receipt", durationMin: 5, completed: false }
       ],
       rescueMode: false
     },
     {
       id: "task-4",
-      title: "Renew Passport Application",
-      description: "Submit online questionnaire, print photograph rules, and pay renewal processing fees.",
+      title: "Renew Passport & Aadhaar verification",
+      description: "Submit online questionnaire, print photograph rules, and pay renewal processing fees on Government of India portal.",
       deadline: deadline4.toISOString(),
       category: "personal",
       urgency: "low",
@@ -96,8 +96,8 @@ export const initialTasks = (): Task[] => {
       ignoreCount: 0,
       aiRecommendation: "Safe buffer (5 days). Postpone to Saturday morning so you can crush your pitch and chemistry exam today.",
       subSteps: [
-        { id: "step-4-1", title: "Fill in legal digital questionnaire", durationMin: 40, completed: false },
-        { id: "step-4-2", title: "Locate physical driver license for verification ID", durationMin: 15, completed: false }
+        { id: "step-4-1", title: "Fill in legal digital passport questionnaire", durationMin: 40, completed: false },
+        { id: "step-4-2", title: "Locate physical Aadhaar card and utility bills for address proof", durationMin: 15, completed: false }
       ],
       rescueMode: false
     }

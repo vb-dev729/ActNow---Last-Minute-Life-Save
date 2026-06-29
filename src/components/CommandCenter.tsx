@@ -1,5 +1,9 @@
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AlertCircle, Zap, ShieldAlert, CheckCircle2, TrendingUp, Clock, Hourglass } from 'lucide-react';
+import { 
+  AlertCircle, Zap, ShieldAlert, CheckCircle2, TrendingUp, Clock, Hourglass, 
+  Sparkles, ListCollapse, ListTodo, Sun, Coffee, Lightbulb, Compass, ShieldAlert as AlertIcon
+} from 'lucide-react';
 import { Task, AIRecommendation } from '../types';
 
 interface CommandCenterProps {
@@ -18,284 +22,248 @@ export default function CommandCenter({
   const activeTasks = tasks.filter((t) => t.status !== 'completed');
   const completedTasks = tasks.filter((t) => t.status === 'completed');
 
-  // 1. Calculate overall progress percentage
-  const totalTasksCount = tasks.length;
-  const completionPercentage =
-    totalTasksCount > 0 ? Math.round((completedTasks.length / totalTasksCount) * 100) : 100;
+  // Morning Mission Statement (AI Daily Command Center generated briefing)
+  const [morningMission, setMorningMission] = useState({
+    title: "Tackle Startup Friction",
+    description: "Your priority is clearing mechanical milestones. Protect your high-focus deep work slots and defer personal routine loops.",
+    estimatedHoursNeeded: 0,
+    timeBudgetAlert: "Stable cognitive buffer remaining.",
+    isRiskOverload: false
+  });
 
-  // 2. Calculate Total Active Cognitive Effort
-  const activeEffortHours = activeTasks.reduce((sum, t) => sum + t.effort, 0);
+  useEffect(() => {
+    const totalEffort = activeTasks.reduce((sum, t) => sum + (t.effort || 1.5), 0);
+    const closestTask = activeTasks
+      .filter((t) => t.deadline)
+      .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())[0];
 
-  // 3. Find closest deadline and time remaining
-  const closestTask = activeTasks
-    .filter((t) => t.deadline)
-    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())[0];
+    let riskOverload = false;
+    let budgetAlert = "Stable cognitive budget. Complete critical items early to prevent build-up.";
 
-  let timeRemainingLabel = 'No immediate threats';
-  let isOverloadWarning = false;
+    if (closestTask) {
+      const diffMs = new Date(closestTask.deadline).getTime() - Date.now();
+      const diffHours = diffMs / (1000 * 60 * 60);
 
-  if (closestTask) {
-    const diffMs = new Date(closestTask.deadline).getTime() - new Date().getTime();
-    const diffHours = diffMs / (1000 * 60 * 60);
-
-    if (diffHours < 0) {
-      timeRemainingLabel = `Overdue: ${closestTask.title}`;
-    } else {
-      const hours = Math.floor(diffHours);
-      const minutes = Math.floor((diffHours - hours) * 60);
-      timeRemainingLabel = `${hours}h ${minutes}m left for: ${closestTask.title}`;
-
-      // Overload check: if active effort exceeds remaining time before the next deadline
-      if (activeEffortHours > diffHours) {
-        isOverloadWarning = true;
+      if (totalEffort > diffHours && diffHours > 0) {
+        riskOverload = true;
+        budgetAlert = `CRITICAL DEFICIT: You have ${totalEffort.toFixed(1)} hrs of pending work but only ${diffHours.toFixed(1)} hrs until your next milestone!`;
+      } else if (diffHours > 0 && diffHours < 12) {
+        budgetAlert = `HIGH TENSION: Next deadline is due in ${diffHours.toFixed(1)} hrs. Eliminate routine tabs.`;
       }
     }
-  }
 
-  // Circular gauge calculations
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (completionPercentage / 100) * circumference;
+    // Curated dynamic missions based on active queue types
+    let missionTitle = "Secure Fundamental Milestones";
+    let missionDesc = "You have a balanced workload. Start with a quick 5-minute easy win to build focus momentum before tackling complex assignments.";
+
+    const highestUrgency = activeTasks.sort((a, b) => b.aiPriorityScore - a.aiPriorityScore)[0];
+    if (highestUrgency) {
+      if (highestUrgency.urgency === 'critical') {
+        missionTitle = `Defuse: ${highestUrgency.title}`;
+        missionDesc = `Immediate rescue actions required. Engage full deep-focus mode on this milestone. Postpone non-urgent check-ins.`;
+      } else if (totalEffort > 6) {
+        missionTitle = "Manage Congested Agenda";
+        missionDesc = `High cognitive congestion ahead. Break larger items into bite-sized micro-steps to prevent mental friction and paralysis.`;
+      }
+    }
+
+    setMorningMission({
+      title: missionTitle,
+      description: missionDesc,
+      estimatedHoursNeeded: totalEffort,
+      timeBudgetAlert: budgetAlert,
+      isRiskOverload: riskOverload
+    });
+  }, [tasks]);
+
+  const topPriorities = activeTasks
+    .sort((a, b) => b.aiPriorityScore - a.aiPriorityScore)
+    .slice(0, 3);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-      {/* Visual Widget 1: Dread & Threat level Gauge */}
+    <div className="space-y-6 mb-8" id="ai-daily-command-center">
+      {/* Morning Greeting & Mission Banner */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="glass-panel p-5 rounded-2xl flex flex-col justify-between min-h-[220px] relative overflow-hidden"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950/20"
       >
-        {/* Calming deep space glow */}
-        <motion.div
-          className="absolute -inset-1 bg-gradient-to-r from-violet-600/10 to-indigo-600/10 rounded-2xl blur-xl -z-10"
-          animate={{
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Mission Progress</h3>
-            <p className="text-2xl font-black mt-1 text-white">{completionPercentage}% Completed</p>
+        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/[0.02] rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div className="flex items-start gap-4">
+            <div className="p-3.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl">
+              <Sun className="w-6 h-6 animate-spin-slow" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-mono font-bold tracking-widest text-indigo-400 uppercase">
+                  AI DAILY BRIEFING
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping" />
+              </div>
+              <h2 className="text-lg font-black text-white mt-1">Today's Mission: {morningMission.title}</h2>
+              <p className="text-xs text-gray-400 mt-1.5 max-w-2xl leading-relaxed">
+                {morningMission.description}
+              </p>
+            </div>
           </div>
-          <span className="p-2 bg-violet-500/10 rounded-lg border border-violet-500/20 text-violet-400">
-            <TrendingUp className="w-5 h-5" />
-          </span>
-        </div>
 
-        {/* Dynamic Interactive Progress Visual */}
-        <div className="flex items-center gap-6 my-2">
-          <div className="relative flex items-center justify-center w-24 h-24">
-            <svg className="w-24 h-24 transform -rotate-90">
-              {/* Background circle */}
-              <circle
-                cx="48"
-                cy="48"
-                r={radius}
-                className="stroke-gray-800"
-                strokeWidth="8"
-                fill="transparent"
-              />
-              {/* Active animated stroke */}
-              <motion.circle
-                cx="48"
-                cy="48"
-                r={radius}
-                className="stroke-violet-500"
-                strokeWidth="8"
-                fill="transparent"
-                strokeDasharray={circumference}
-                initial={{ strokeDashoffset: circumference }}
-                animate={{ strokeDashoffset }}
-                transition={{ duration: 1.2, ease: 'easeOut' }}
-                strokeLinecap="round"
-              />
-            </svg>
-            <span className="absolute text-lg font-mono font-bold text-violet-200">
-              {completedTasks.length}/{totalTasksCount}
+          {/* Time Budget Status */}
+          <div className="bg-black/40 border border-white/5 p-4 rounded-xl flex flex-col justify-center min-w-[200px]">
+            <span className="text-[9px] text-gray-500 font-extrabold uppercase tracking-wider font-mono flex items-center gap-1">
+              <Coffee className="w-3.5 h-3.5 text-indigo-400" />
+              <span>COGNITIVE BUDGET</span>
+            </span>
+            <div className="flex items-baseline gap-1 mt-1.5">
+              <span className="text-xl font-black text-white font-mono">{morningMission.estimatedHoursNeeded.toFixed(1)}</span>
+              <span className="text-xs text-gray-400">hours needed</span>
+            </div>
+            <p className={`text-[10px] mt-2 font-semibold leading-normal ${morningMission.isRiskOverload ? 'text-rose-400' : 'text-emerald-400'}`}>
+              {morningMission.timeBudgetAlert}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Grid of Command Center Widgets */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Widget 1: Focus Score & Stats */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="glass-panel p-5 rounded-2xl flex flex-col justify-between min-h-[220px] relative overflow-hidden"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Queue Efficiency</h3>
+              <p className="text-2xl font-black mt-1 text-white">
+                {tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 100) : 100}%
+              </p>
+            </div>
+            <span className="p-2 bg-violet-500/10 rounded-lg border border-violet-500/20 text-violet-400">
+              <TrendingUp className="w-4 h-4" />
             </span>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-              <span className="text-gray-400">Active Tasks:</span>
-              <span className="font-bold font-mono text-white">{activeTasks.length}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="text-gray-400">Beaten:</span>
-              <span className="font-bold font-mono text-white">{completedTasks.length}</span>
-            </div>
-          </div>
-        </div>
-
-        <p className="text-xs text-gray-400 mt-2 italic">
-          {activeTasks.length > 0
-            ? `Optimize your schedule to secure those remaining ${activeTasks.length} tasks.`
-            : 'Excellent work! No threats remaining in queue.'}
-        </p>
-      </motion.div>
-
-      {/* Visual Widget 2: Overload & Buffer Indicator */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className={`glass-panel p-5 rounded-2xl flex flex-col justify-between min-h-[220px] relative overflow-hidden border ${
-          isOverloadWarning ? 'border-rose-500/30 bg-rose-950/10' : 'border-white/5'
-        }`}
-      >
-        {/* Dynamic alarm pulse or stability glow */}
-        <motion.div
-          className={`absolute -inset-1 rounded-2xl blur-xl -z-10 bg-gradient-to-r ${
-            isOverloadWarning 
-              ? 'from-rose-600/20 to-red-600/20' 
-              : 'from-indigo-600/10 to-violet-600/10'
-          }`}
-          animate={{
-            opacity: isOverloadWarning ? [0.4, 0.9, 0.4] : [0.2, 0.5, 0.2],
-          }}
-          transition={{
-            duration: isOverloadWarning ? 1.5 : 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Effort vs. Buffer</h3>
-            <p className="text-2xl font-black mt-1 text-white">
-              {activeEffortHours.toFixed(1)} <span className="text-sm font-medium text-gray-400">Est. Hours</span>
-            </p>
-          </div>
-          <span
-            className={`p-2 rounded-lg border ${
-              isOverloadWarning
-                ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-                : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
-            }`}
-          >
-            {isOverloadWarning ? <ShieldAlert className="w-5 h-5" /> : <Hourglass className="w-5 h-5" />}
-          </span>
-        </div>
-
-        {/* Live warnings / Info block */}
-        <div className="flex flex-col gap-2 my-2 bg-black/20 p-3 rounded-xl border border-white/5">
-          <div className="flex items-center gap-2 text-xs">
-            <Clock className="w-4 h-4 text-violet-400" />
-            <span className="text-gray-400 font-medium">Nearest deadline:</span>
-          </div>
-          <span className="text-xs font-semibold text-violet-200 truncate">{timeRemainingLabel}</span>
-        </div>
-
-        {isOverloadWarning ? (
-          <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 rounded-lg p-2 mt-2">
-            <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
-            <p className="text-[10px] text-rose-300 font-bold leading-normal">
-              CRITICAL: Active effort hours exceed available time buffer! Reschedule low-priority items now.
-            </p>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-400 mt-2">
-            You have safe cognitive buffer. Maintain focus sprints to complete tasks without rush.
-          </p>
-        )}
-      </motion.div>
-
-      {/* Visual Widget 3: Live AI Recommendation Feed */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="glass-panel p-5 rounded-2xl flex flex-col justify-between min-h-[220px] lg:col-span-1 relative overflow-hidden"
-      >
-        {/* Subtle recommendation beacon */}
-        <motion.div
-          className="absolute -inset-1 bg-gradient-to-r from-fuchsia-600/5 to-pink-600/5 rounded-2xl blur-xl -z-10"
-          animate={{
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 3.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">AI Copilot Recommendations</h3>
-          <span className="text-[10px] bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-            Live
-          </span>
-        </div>
-
-        {/* Recommendations Scroll Container */}
-        <div className="flex-1 overflow-y-auto max-h-[140px] pr-1 space-y-3.5 custom-scrollbar">
-          <AnimatePresence mode="popLayout">
-            {recommendations.length > 0 ? (
-              recommendations.map((rec) => (
-                <motion.div
-                  key={rec.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className={`p-3 rounded-xl border text-xs flex flex-col gap-2 relative ${
-                    rec.type === 'danger'
-                      ? 'bg-rose-500/5 border-rose-500/20 text-rose-200'
-                      : rec.type === 'warning'
-                      ? 'bg-amber-500/5 border-amber-500/20 text-amber-200'
-                      : 'bg-white/5 border-white/5 text-gray-200'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-1.5">
-                    <div className="flex items-center gap-1.5 font-bold">
-                      <Zap className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
-                      <span>{rec.title}</span>
-                    </div>
-                    <button
-                      onClick={() => onDismissRecommendation(rec.id)}
-                      className="text-gray-400 hover:text-white transition-colors cursor-pointer text-[10px]"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-gray-400 leading-relaxed font-medium">{rec.description}</p>
-
-                  {/* Contextual Interactive Actions */}
-                  {rec.affectedTaskIds && rec.affectedTaskIds.length > 0 && (
-                    <div className="flex justify-end gap-2 mt-1">
-                      {rec.affectedTaskIds.map((taskId) => {
-                        const targetTask = tasks.find((t) => t.id === taskId);
-                        if (!targetTask || targetTask.status === 'completed') return null;
-                        return (
-                          <button
-                            key={taskId}
-                            onClick={() => onCompleteTask(taskId)}
-                            className="bg-violet-600 hover:bg-violet-500 text-white font-bold py-1 px-2.5 rounded text-[10px] transition-colors flex items-center gap-1 cursor-pointer"
-                          >
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Mark Beaten</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </motion.div>
-              ))
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center py-6 text-center text-gray-400">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 mb-2 opacity-60 animate-bounce" />
-                <p className="text-xs">No stress alerts currently triggered.</p>
+          <div className="my-3 flex items-center gap-4 bg-black/20 p-3 rounded-xl border border-white/5">
+            <div className="flex flex-col gap-1 flex-1">
+              <div className="flex justify-between text-[10px] text-gray-400 font-semibold">
+                <span>Completed Tasks</span>
+                <span className="text-white font-bold">{completedTasks.length} / {tasks.length}</span>
               </div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
+              <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden mt-1">
+                <div 
+                  className="h-full bg-violet-500 rounded-full transition-all duration-500" 
+                  style={{ width: `${tasks.length > 0 ? (completedTasks.length / tasks.length) * 100 : 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="text-[10px] text-gray-500 font-medium">
+            Completion velocity is computed in real-time. Boost your score by checking off substeps.
+          </div>
+        </motion.div>
+
+        {/* Widget 2: Today's Top Priorities */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="glass-panel p-5 rounded-2xl flex flex-col justify-between min-h-[220px] relative border border-white/5"
+        >
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                <ListTodo className="w-4 h-4 text-indigo-400" />
+                <span>Top Priorities</span>
+              </h3>
+              <span className="text-[9px] font-mono text-gray-500">Auto-prioritized</span>
+            </div>
+
+            <div className="space-y-2.5">
+              {topPriorities.length > 0 ? (
+                topPriorities.map((task) => (
+                  <div key={task.id} className="flex items-center justify-between text-xs bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 p-2 rounded-lg">
+                    <span className="font-bold text-gray-200 truncate max-w-[160px]">{task.title}</span>
+                    <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                      task.urgency === 'critical' ? 'bg-rose-500/10 text-rose-400' : 'bg-amber-500/10 text-amber-400'
+                    }`}>
+                      Score {task.aiPriorityScore}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-emerald-400 bg-emerald-500/5 p-2 rounded-lg">
+                  ✓ All targets secured! No pending high-stress tasks.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="text-[10px] text-gray-500 font-medium mt-3">
+            Tackle the highest priority score first to maximize study/work stamina.
+          </div>
+        </motion.div>
+
+        {/* Widget 3: Live Companion Recommendations */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="glass-panel p-5 rounded-2xl flex flex-col justify-between min-h-[220px] relative overflow-hidden"
+        >
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+              <Lightbulb className="w-4 h-4 text-violet-400" />
+              <span>Real-time Risk Alerts</span>
+            </h3>
+            <span className="text-[8px] bg-violet-500/20 text-violet-300 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-widest font-mono">
+              Live
+            </span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto max-h-[110px] pr-1 space-y-2.5 custom-scrollbar">
+            <AnimatePresence mode="popLayout">
+              {recommendations.length > 0 ? (
+                recommendations.map((rec) => (
+                  <div
+                    key={rec.id}
+                    className={`p-2.5 rounded-xl border text-[11px] flex flex-col gap-1.5 relative ${
+                      rec.type === 'danger'
+                        ? 'bg-rose-500/5 border-rose-500/10 text-rose-200'
+                        : rec.type === 'warning'
+                        ? 'bg-amber-500/5 border-amber-500/10 text-amber-200'
+                        : 'bg-white/5 border-white/5 text-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-1.5">
+                      <div className="flex items-center gap-1 font-extrabold">
+                        <AlertCircle className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
+                        <span>{rec.title}</span>
+                      </div>
+                      <button
+                        onClick={() => onDismissRecommendation(rec.id)}
+                        className="text-gray-400 hover:text-white transition-colors cursor-pointer text-[9px]"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-gray-400 leading-normal font-medium">{rec.description}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center py-4 text-center text-gray-500">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-400 mb-1 opacity-60 animate-pulse" />
+                  <p className="text-[10px]">No active congestion alerts.</p>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

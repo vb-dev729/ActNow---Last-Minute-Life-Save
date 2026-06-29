@@ -10,7 +10,7 @@ interface Star {
   delay: number;
 }
 
-export default function AmbientStarfield() {
+export default function AmbientStarfield({ speedUp = false }: { speedUp?: boolean }) {
   const [stars, setStars] = useState<Star[]>([]);
 
   useEffect(() => {
@@ -28,30 +28,35 @@ export default function AmbientStarfield() {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {stars.map((star) => (
-        <motion.div
-          key={star.id}
-          className="absolute rounded-full bg-violet-400/40"
-          style={{
-            left: `${star.x}%`,
-            top: `${star.y}%`,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            boxShadow: star.size > 1.8 ? '0 0 8px rgba(139, 92, 246, 0.6)' : 'none',
-          }}
-          animate={{
-            y: [0, -30, 0],
-            opacity: [0.15, 0.8, 0.15],
-            scale: [1, 1.4, 1],
-          }}
-          transition={{
-            duration: star.duration,
-            repeat: Infinity,
-            delay: star.delay,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
+      {stars.map((star) => {
+        const adjustedDuration = speedUp ? star.duration / 3.5 : star.duration;
+        const starColor = speedUp ? 'bg-rose-400/60' : 'bg-violet-400/40';
+        
+        return (
+          <motion.div
+            key={star.id}
+            className={`absolute rounded-full ${starColor}`}
+            style={{
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              boxShadow: star.size > 1.8 ? (speedUp ? '0 0 10px rgba(239, 68, 68, 0.8)' : '0 0 8px rgba(139, 92, 246, 0.6)') : 'none',
+            }}
+            animate={{
+              y: speedUp ? [0, -60, 0] : [0, -30, 0],
+              opacity: [0.15, 0.8, 0.15],
+              scale: [1, 1.4, 1],
+            }}
+            transition={{
+              duration: adjustedDuration,
+              repeat: Infinity,
+              delay: speedUp ? 0 : star.delay,
+              ease: "easeInOut",
+            }}
+          />
+        );
+      })}
 
       {/* Floating larger auroral orbs in background */}
       <motion.div

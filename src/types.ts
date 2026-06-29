@@ -19,7 +19,7 @@ export interface Task {
   title: string;
   description: string;
   deadline: string; // ISO string
-  category: 'work' | 'study' | 'personal' | 'finance' | 'other';
+  category: 'goal' | 'assignment' | 'project' | 'exam' | 'interview' | 'work' | 'study' | 'personal' | 'finance' | 'other';
   urgency: 'critical' | 'high' | 'medium' | 'low';
   effort: number; // estimated hours to complete
   difficulty: number; // 1 to 5
@@ -60,6 +60,22 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   audioUrl?: string; // base64-encoded audio if generated
+  actionCard?: ActionCardData;
+  routedAgent?: 'productivity' | 'health' | 'goal' | 'balance';
+}
+
+export interface ActionCardData {
+  type: 'task' | 'schedule' | 'risk_alert' | 'burnout_alert' | 'workout_rec' | 'sleep_rec' | 'goal_progress';
+  title: string;
+  subtitle?: string;
+  metrics?: { label: string; value: string | number; color?: string }[];
+  scheduleItems?: { time: string; activity: string; badge?: string }[];
+  alertLevel?: 'danger' | 'warning' | 'info' | 'success';
+  value?: number; // e.g., burnout score, goal percentage
+  recommendation?: string;
+  primaryActionLabel?: string;
+  secondaryActionLabel?: string;
+  actionPayload?: any;
 }
 
 export interface AIRecommendation {
